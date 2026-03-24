@@ -86,7 +86,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-// 🔥 Trang chi tiết
+//  Trang chi tiết
 class DetailPage extends StatelessWidget {
   final Member member;
 
