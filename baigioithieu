@@ -103,7 +103,7 @@ class HomePage extends StatelessWidget {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    "👉 Nhấn để xem chi tiết",
+                    " Nhấn để xem chi tiết",
                     style: TextStyle(fontSize: 12, color: Colors.white54),
                   )
                 ],
