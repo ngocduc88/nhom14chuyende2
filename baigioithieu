@@ -25,14 +25,15 @@ class MyApp extends StatelessWidget {
     name: "Phùng Ngọc Đức",
     studentId: "20224132",
     birthYear: "2004",
-    school: "Trường Đại học Công Nghệ Đông Á",
-    major: "Công nghệ thông tin",
+    school: "ĐH Công Nghệ Đông Á",
+    major: "CNTT",
   );
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(useMaterial3: true),
       home: HomePage(member: member),
     );
   }
@@ -46,36 +47,65 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Thành viên"), centerTitle: true),
-      body: Center(
-        child: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => DetailPage(member: member)),
-            );
-          },
-          child: Card(
-            elevation: 5,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(20),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xff4facfe), Color(0xff00f2fe)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  transitionDuration: Duration(milliseconds: 500),
+                  pageBuilder: (_, __, ___) => DetailPage(member: member),
+                  transitionsBuilder: (_, anim, __, child) {
+                    return FadeTransition(opacity: anim, child: child);
+                  },
+                ),
+              );
+            },
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 300),
+              padding: EdgeInsets.all(25),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: Colors.white.withOpacity(0.3)),
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.blue,
-                    child: Icon(Icons.person, color: Colors.white),
+                    radius: 40,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, size: 40, color: Colors.blue),
+                  ),
+                  SizedBox(height: 15),
+                  Text(
+                    member.name,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    "MSSV: ${member.studentId}",
+                    style: TextStyle(color: Colors.white70),
                   ),
                   SizedBox(height: 10),
                   Text(
-                    member.name,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  Text("MSSV: ${member.studentId}"),
+                    "👉 Nhấn để xem chi tiết",
+                    style: TextStyle(fontSize: 12, color: Colors.white54),
+                  )
                 ],
               ),
             ),
@@ -86,46 +116,62 @@ class HomePage extends StatelessWidget {
   }
 }
 
-//  Trang chi tiết
 class DetailPage extends StatelessWidget {
   final Member member;
 
   DetailPage({required this.member});
 
+  Widget infoBox(IconData icon, String text) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 6),
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.blue),
+          SizedBox(width: 10),
+          Expanded(child: Text(text)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Chi tiết")),
-      body: Center(
-        child: Card(
-          elevation: 8,
-          margin: EdgeInsets.all(20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Padding(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Colors.blue,
-                  child: Icon(Icons.person, size: 40, color: Colors.white),
-                ),
-                SizedBox(height: 15),
-                Text(
-                  member.name,
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 10),
-                Text("MSSV: ${member.studentId}"),
-                Text("Năm sinh: ${member.birthYear}"),
-                Text("Trường: ${member.school}"),
-                Text("Khoa: ${member.major}"),
-              ],
+      appBar: AppBar(
+        title: Text("Chi tiết"),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      body: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(20),
+        child: Column(
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.blue,
+              child: Icon(Icons.person, size: 50, color: Colors.white),
             ),
-          ),
+            SizedBox(height: 15),
+            Text(
+              member.name,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 20),
+
+            infoBox(Icons.badge, "MSSV: ${member.studentId}"),
+            infoBox(Icons.cake, "Năm sinh: ${member.birthYear}"),
+            infoBox(Icons.school, member.school),
+            infoBox(Icons.computer, member.major),
+          ],
         ),
       ),
     );
