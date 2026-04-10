@@ -1,0 +1,292 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class Task {
+  String name;
+  DateTime time;
+  String location;
+  bool isReminder;
+  String reminderType;
+
+  Task({
+    required this.name,
+    required this.time,
+    required this.location,
+    required this.isReminder,
+    required this.reminderType,
+  });
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: "Nhắc việc",
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: TaskScreen(),
+    );
+  }
+}
+
+class TaskScreen extends StatefulWidget {
+  @override
+  State<TaskScreen> createState() => _TaskScreenState();
+}
+
+class _TaskScreenState extends State<TaskScreen> {
+  List<Task> tasks = [];
+
+  void addTask(Task task) {
+    setState(() {
+      tasks.add(task);
+    });
+  }
+
+  void openAddTaskScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddTaskScreen(addTask),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Nhắc việc"),
+        centerTitle: true,
+      ),
+      body: tasks.isEmpty
+          ? Center(
+        child: Text(
+          "Chưa có công việc nào",
+          style: TextStyle(fontSize: 16),
+        ),
+      )
+          : ListView.builder(
+        itemCount: tasks.length,
+        itemBuilder: (context, index) {
+          Task t = tasks[index];
+          return Card(
+            margin: EdgeInsets.all(10),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 3,
+            child: ListTile(
+              title: Text(
+                t.name,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                "${DateFormat('dd/MM/yyyy HH:mm').format(t.time)}\n${t.location}",
+              ),
+              isThreeLine: true,
+              trailing: Icon(
+                t.isReminder
+                    ? Icons.notifications_active
+                    : Icons.notifications_off,
+                color: t.isReminder ? Colors.red : Colors.grey,
+              ),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: openAddTaskScreen,
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class AddTaskScreen extends StatefulWidget {
+  final Function(Task) addTask;
+
+  AddTaskScreen(this.addTask);
+
+  @override
+  State<AddTaskScreen> createState() => _AddTaskScreenState();
+}
+
+class _AddTaskScreenState extends State<AddTaskScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController locationController = TextEditingController();
+
+  DateTime selectedTime = DateTime.now();
+  bool isReminder = false;
+  String reminderType = "Chuông";
+
+  void pickDateTime() async {
+    DateTime? date = await showDatePicker(
+      context: context,
+      initialDate: selectedTime,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+
+    if (date != null) {
+      TimeOfDay? time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (time != null) {
+        setState(() {
+          selectedTime = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            time.hour,
+            time.minute,
+          );
+        });
+      }
+    }
+  }
+
+  void saveTask() {
+    if (nameController.text.isEmpty ||
+        locationController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Nhập đầy đủ thông tin")),
+      );
+      return;
+    }
+
+    widget.addTask(Task(
+      name: nameController.text,
+      time: selectedTime,
+      location: locationController.text,
+      isReminder: isReminder,
+      reminderType: reminderType,
+    ));
+
+    Navigator.pop(context);
+  }
+
+  Widget inputField(String label, TextEditingController controller) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        filled: true,
+        fillColor: Colors.grey[100],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(
+        title: Text("Thêm công việc"),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 5,
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              children: [
+                inputField("Tên công việc", nameController),
+                SizedBox(height: 12),
+                inputField("Địa điểm", locationController),
+                SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    Icon(Icons.access_time, color: Colors.blue),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        DateFormat('dd/MM/yyyy HH:mm')
+                            .format(selectedTime),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: pickDateTime,
+                      child: Text("Chọn"),
+                    )
+                  ],
+                ),
+
+                Divider(),
+
+                SwitchListTile(
+                  title: Text("Bật nhắc việc"),
+                  value: isReminder,
+                  onChanged: (value) {
+                    setState(() {
+                      isReminder = value;
+                    });
+                  },
+                ),
+
+                if (isReminder)
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey),
+                      color: Colors.grey[100],
+                    ),
+                    child: DropdownButton<String>(
+                      value: reminderType,
+                      isExpanded: true,
+                      underline: SizedBox(),
+                      items: ["Chuông", "Email", "Thông báo"]
+                          .map((e) => DropdownMenuItem(
+                        value: e,
+                        child: Text(e),
+                      ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          reminderType = value!;
+                        });
+                      },
+                    ),
+                  ),
+
+                SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: saveTask,
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text("Lưu"),
+                  ),
+                )
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
